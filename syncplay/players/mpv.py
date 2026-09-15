@@ -138,6 +138,8 @@ class MpvPlayer(BasePlayer):
         self._listener.sendLine(["script-message-to", "syncplayintf", "{}-osd-{}".format(OSDType, mood), messageString])
 
     def displayChatMessage(self, username, message):
+        username = constants.BIDI_ISOLATE_FORMAT.format(username)
+        message = constants.BIDI_ISOLATE_FORMAT.format(message)
         if not self._client._config["chatOutputEnabled"]:
             messageString = "<{}> {}".format(username, message)
             messageString = self._sanitizeText(messageString.replace("\\n", "<NEWLINE>")).replace("<NEWLINE>", "\\n")

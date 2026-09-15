@@ -658,7 +658,13 @@ class MainWindow(QtWidgets.QMainWindow):
             username = messageWithUsername.group("username")
             message = messageWithUsername.group("message")
         message = message.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+        # Isolate each line and the username, so RTL text (e.g. Arabic) keeps its own direction in the LTR log.
+        # Leading spaces stay outside the isolate, so HTML still collapses them like before.
+        message = "\n".join(
+            line[:len(line) - len(line.lstrip())] + constants.BIDI_ISOLATE_FORMAT.format(line.lstrip()) if line.strip() else line
+            for line in message.split("\n"))
         if username:
+            username = constants.BIDI_ISOLATE_FORMAT.format(username)
             message = constants.STYLE_USER_MESSAGE.format(constants.STYLE_USERNAME, username, message)
         # When showing a MOTD, escape spaces and use a monospace font to preserve the look of ASCII art.
         if isMotd:

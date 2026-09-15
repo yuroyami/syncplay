@@ -27,6 +27,7 @@ NO_ALERT_OSD_WARNING_DURATION = 13.0
 MPC_OSD_POSITION = 1  # Right corner, 1 for left
 MPLAYER_OSD_LEVEL = 1
 UI_TIME_FORMAT = "[%X] "
+BIDI_ISOLATE_FORMAT = "\u2068{}\u2069"  # Unicode first-strong isolate: RTL text (e.g. Arabic) keeps its own direction
 CONFIG_NAMES = [".syncplay", "syncplay.ini"]  # Syncplay searches first to last
 DEFAULT_CONFIG_NAME = "syncplay.ini"
 RECENT_CLIENT_THRESHOLD = "1.7.6"  # This and higher considered 'recent' clients (no warnings)
