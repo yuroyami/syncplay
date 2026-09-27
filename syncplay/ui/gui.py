@@ -259,7 +259,7 @@ class ChatLogBrowser(QtWidgets.QTextBrowser):
     knownFormats = ("text/plain", "text/html", "text/markdown", "application/vnd.oasis.opendocument.text")
 
     def createMimeDataFromSelection(self):
-        marks = constants.BIDI_ISOLATE_FORMAT.format("")
+        marks = constants.BIDI_ISOLATE_MARKS
         selection = self.textCursor()
         if not any(mark in selection.selectedText() for mark in marks):
             return super().createMimeDataFromSelection()
@@ -722,14 +722,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if messageWithUsername:
             username = messageWithUsername.group("username")
             message = messageWithUsername.group("message")
+        # Isolate lines and user names with RTL text (e.g. Arabic), so they keep their own direction in the LTR log.
+        # Notification lines are UI text, and all UI languages are LTR. Chat and MOTD lines follow their own words.
+        message = utils.isolateBidiText(message, None if username or isMotd else constants.BIDI_ISOLATE_LTR_FORMAT)
         message = message.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
-        # Isolate each line and the username, so RTL text (e.g. Arabic) keeps its own direction in the LTR log.
-        # Leading spaces stay outside the isolate, so HTML still collapses them like before.
-        message = "\n".join(
-            line[:len(line) - len(line.lstrip())] + constants.BIDI_ISOLATE_FORMAT.format(line.lstrip()) if line.strip() else line
-            for line in message.split("\n"))
         if username:
-            username = constants.BIDI_ISOLATE_FORMAT.format(username)
+            username = utils.isolateBidiText(username)
             message = constants.STYLE_USER_MESSAGE.format(constants.STYLE_USERNAME, username, message)
         # When showing a MOTD, escape spaces and use a monospace font to preserve the look of ASCII art.
         if isMotd:
@@ -1192,6 +1190,7 @@ class MainWindow(QtWidgets.QMainWindow):
         message = str(message)
         if criticalerror:
             QtWidgets.QMessageBox.critical(self, "Syncplay", message)
+        message = utils.isolateBidiText(message, constants.BIDI_ISOLATE_LTR_FORMAT)  # like notification lines in showMessage
         message = message.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")
         message = message.replace("&lt;a href=&quot;https://syncplay.pl/trouble&quot;&gt;", '<a href="https://syncplay.pl/trouble">').replace("&lt;/a&gt;", "</a>")
         message = message.replace("&lt;a href=&quot;https://mpv.io/&quot;&gt;", '<a href="https://mpv.io/">').replace("&lt;/a&gt;", "</a>")
